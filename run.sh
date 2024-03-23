@@ -9,8 +9,6 @@
 ##SBATCH -o sh/train-zero-shot-multiwoz2.1/out.log
 ##SBATCH -e sh/train-zero-shot-multiwoz2.1/error.log
 
-cd /public/home/wlchen/twtang/MoPE
-
 backbone="chatglm"
 total_step=50000
 save_step=5000
