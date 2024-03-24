@@ -27,8 +27,7 @@ pip install -r requirements.txt
 
 ### Download pretrained model
 
-```bash
-```
+[chatglm-6b download link](https://huggingface.co/THUDM/chatglm-6b)
 
 ### Download & process source data
 
