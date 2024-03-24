@@ -22,13 +22,18 @@ conditional generation. Multiple Prefix Prompt Generation shows the complete pip
 ### Download packages
 
 ```bash
-pip install - r requirements.txt
+pip install -r requirements.txt
+```
+
+### Download pretrained model
+
+```bash
 ```
 
 ### Download & process source data
 
 ```shell
-bash sh/download_process_data.sh
+bash download_process_data.sh
 ```
 ## Train & Evaluate
 
