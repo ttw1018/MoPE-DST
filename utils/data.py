@@ -140,34 +140,34 @@ def process_raw_data(args, tokenizer, run_type):
 
     schema = json.load(open(os.path.join(data_dir, "schema.json"), "r"))
 
-    all_slotnames = []
+    all_slotnames = ["name"]
 
     for k, v in schema.items():
         all_slotnames.extend(v)
 
-    description = json.load(open(os.path.join(data_dir, "description.json"), "r"))
+    description = None
+    # description = json.load(open(os.path.join(data_dir, "description.json"), "r"))
 
     raw_data = pd.read_json(os.path.join(data_dir, f"{run_type}.json"), encoding="utf-8")
     raw_data = process_valid_dialogue(args, raw_data, zero_shot_domain, run_type)
 
+    slotnames = []
 
-    slotnames = set()
-
-    for k, v in raw_data.iterrows():
-        belief_state = v["belief_state"]
-        for st in belief_state:
-            all_state = st["all_states"]
-            for st in all_state:
-                slotnames.add(st[1])
-    slotnames = list(slotnames)
-
-    cluster_info = cluster(args, tokenizer, slotnames, all_slotnames, run_type)
 
     print(f"{run_type} raw data: {len(raw_data)}")
-
+    cluster_info = None
     processed_data = get_processed_data(args, raw_data, schema, cluster_info, run_type)
 
     processed_data = pd.DataFrame(processed_data)
+
+    slotnames = list(set(processed_data["slotname"]))
+    cluster_info = cluster(args, tokenizer, slotnames, all_slotnames, run_type)
+
+    def add_cluster_id(df):
+        df["cluster"] = cluster_info[df["slotname"]]
+        return df
+    processed_data = processed_data.apply(add_cluster_id, axis=1)
+
     return processed_data, description
 
 
@@ -289,7 +289,7 @@ def get_processed_data(args, data, schema, cluster_info, run_type):
                     value = belief_states[slot]
                 else:
                     value = "none"
-                p = cluster_info[slot]
+                # p = cluster_info[slot]
 
                 processed_data.append({
                     "dialogue_id": dialogue_id,
@@ -298,7 +298,7 @@ def get_processed_data(args, data, schema, cluster_info, run_type):
                     "turn": turn,
                     "utterance": utterance,
                     "domain": domain,
-                    "cluster": p
+                    # "cluster": p
                 })
 
     print(f"all processed data {len(processed_data)}")
