@@ -37,8 +37,8 @@ class ValueMetric:
 
         data = pd.DataFrame(self.datas)
 
-        if not self.args.use_all_state:
-            data = data.groupby("dialogue_id").apply(self.update_dialogue_state).reset_index(drop=True)
+        # if not self.args.use_all_state:
+        #     data = data.groupby("dialogue_id").apply(self.update_dialogue_state).reset_index(drop=True)
 
         data = data.apply(self.check, axis=1)
 
@@ -106,10 +106,10 @@ class ValueMetric:
             else:
                 insert_few_shot_result(uuid, self.args, slot_acc, label_acc, none_acc, JGA)
 
-        if os.path.exists(result_csv_path):
+        if os.path.exists(result_csv_path) and step == None:
             previous_result = pd.read_csv(result_csv_path, index_col=0)
             tmp_result = pd.concat([previous_result, tmp_result]).reset_index(drop=True)
-        tmp_result.to_csv(result_csv_path, index_label="index")
+            tmp_result.to_csv(result_csv_path, index_label="index")
 
         if self.args.save_prediction:
             prediction_dir = os.path.join(self.args.prediction_save_path,

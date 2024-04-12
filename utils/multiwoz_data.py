@@ -6,7 +6,6 @@ import pandas as pd
 from copy import deepcopy
 from utils.data_utils import save_processed_files, unzip_file, save_schema
 
-
 def process_dialogue(dialogue_id, dialogue):
     all_state = {}
     turn_state = {}
@@ -101,6 +100,7 @@ def preprocess1(data_dir, dst_dir):
     for k, v in all_schema.items():
         all_schema[k] = list(v)
     save_schema(all_schema, dst_dir)
+
 
 def process_dialogue2(dialogue):
     all_state_data = []

@@ -1,16 +1,7 @@
 #!/bin/bash
 
-#SBATCH -J multiwoz2.1-zero-shot
-#SBATCH -n 6
-#SBATCH -N 1
-#SBATCH -p batch
-#SBATCH -t 72:00:00
-#SBATCH --gres=gpu:NVIDIAA100-PCIE-40GB:1
-##SBATCH -o sh/train-zero-shot-multiwoz2.1/out.log
-##SBATCH -e sh/train-zero-shot-multiwoz2.1/error.log
-
 backbone="chatglm"
-total_step=50000
+total_step=100000
 save_step=5000
 
 dataset=multiwoz2.1
@@ -21,16 +12,13 @@ none_rate=1
 
 exclude_domains=(attraction hotel restaurant taxi train)
 
-#exclude_domains=(attraction)
-#exclude_domains=(hotel restaurant taxi train)
 
 feature="transformer"
 for exclude_domain in ${exclude_domains[*]}; do
-  for n_clusters in 1 2 3 4 5; do
+  for n_clusters in 1 2; do
     result_csv_dir="result/zero-shot"
-    train_id=${n_clusters}-cluster
-
-    accelerate launch --config_file config.yaml \
+    train_id=${n_clusters}-cluster-V3
+    accelerate launch \
       train.py \
       --dataset $dataset \
       --backbone $backbone \
@@ -52,7 +40,9 @@ for exclude_domain in ${exclude_domains[*]}; do
       --zero_shot \
       --exclude_domain ${exclude_domain} \
       --none_rate ${none_rate} \
-      --use_all_state
+      --use_all_state \
+      --chatglm_path /home/hadoop-mining/dolphinfs_hdd_hadoop-mining/tianwen/ptm/glm \
+      --stop_metrics slot_acc
 
     python evaluate.py \
       --mppt \
@@ -70,6 +60,7 @@ for exclude_domain in ${exclude_domains[*]}; do
       --cluster_feature $feature \
       --exclude_domain ${exclude_domain} \
       --none_rate ${none_rate} \
-      --use_all_state
+      --use_all_state \
+      --chatglm_path /home/hadoop-mining/dolphinfs_hdd_hadoop-mining/tianwen/ptm/glm 
   done
 done

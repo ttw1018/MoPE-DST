@@ -57,26 +57,10 @@ def evaluate_dev_cluster(args, loader, model, tokenizer, step, cluster_id, progr
 
 
 def run(args):
-    if args.backbone == "glm":
-        from models.glm_generate import DST
-        from models.glm.tokenization_glm import GLMTokenizer
-        tokenizer = GLMTokenizer.from_pretrained(args.glm_path)
-    elif args.backbone == "T5":
-        from models.T5_generate import DST
-        from transformers import T5Tokenizer
-        tokenizer = T5Tokenizer.from_pretrained(args.t5_path)
-    elif args.backbone == "gpt2":
-        from models.gpt2_generate import DST
-        from transformers import GPT2Tokenizer
-        tokenizer = GPT2Tokenizer.from_pretrained(args.gpt2_path)
-    elif args.backbone == "chatglm":
+    if args.backbone == "chatglm":
         from models.chatglm_generate import DST
         from models.chatglm.tokenization_chatglm import ChatGLMTokenizer
         tokenizer = ChatGLMTokenizer.from_pretrained(args.chatglm_path)
-    elif args.backbone == "chatglm2":
-        from models.chatglm2.tokenization_chatglm import ChatGLMTokenizer
-        from models.chatglm2_generate import DST
-        tokenizer = ChatGLMTokenizer.from_pretrained(args.chatglm2_path)
     else:
         raise ValueError("backbone is not correct")
 

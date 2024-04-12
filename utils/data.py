@@ -1,7 +1,7 @@
 import json
 import random
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 import os
 import numpy as np
 import pandas as pd
@@ -9,14 +9,13 @@ from utils.cluster import cluster
 
 
 class DSTState(Dataset):
-    def __init__(self, args, data, description, example, tokenizer, run_type="train"):
+    def __init__(self, args, data, example, tokenizer, run_type="train"):
         super(DSTState, self).__init__()
         self.args = args
         self.data = data
         self.tokenizer = tokenizer
         self.run_type = run_type
         self.example = example
-        self.description = description
 
     def __len__(self):
         return len(self.data)
@@ -25,18 +24,7 @@ class DSTState(Dataset):
         return dict(self.data.iloc[item])
 
     def get_input_context(self, utterance, slotname, value):
-        if self.args.dataset in ["crosswoz", "risawoz"]:
-            s = f"#对话：{utterance} 问：{slotname} 答：{value}"
-        else:
-            s = f"#dialogue: {utterance} #question: {slotname} #answer: {value}"
-
-        if self.args.input_context == "structure":
-            s = f"#dialogue: {utterance} #question: {slotname} #answer: {value}"
-        elif self.args.input_context == "description":
-            # s = (f"Given the following dialogue and answer the question, if no relevent information, output 'none'. "
-            s = (f"#dialogue: {utterance} "
-                 f"#question: {self.description[slotname.lower()]} "
-                 f"#answer: {value}")
+        s = f"#dialogue: {utterance} #question: {slotname} #answer: {value}"
 
         if self.args.use_lower:
             s = s.lower()
@@ -58,7 +46,7 @@ class DSTState(Dataset):
             "labels": [],
             "slotname": [],
             "domain": [],
-            "cluster": [],
+            "cluster_id": [],
             "inputs": {
             },
         }
@@ -70,11 +58,11 @@ class DSTState(Dataset):
             d["labels"].append(data["value"])
             d["dialogue_id"].append(data["dialogue_id"])
             d["domain"].append(data["domain"])
-            d["cluster"].append(data["cluster"])
+            d["cluster_id"].append(data["cluster_id"])
             if self.args.random_prompt:
                 cluster.append(random.randint(0, self.args.n_clusters - 1))
             else:
-                cluster.append(data["cluster"])
+                cluster.append(data["cluster_id"])
 
         max_input_length = 0
         train_input = []
@@ -116,7 +104,6 @@ class DSTState(Dataset):
             d["inputs"]["input_ids"] = torch.tensor(np.array(input_ids))
             d["inputs"]["labels"] = torch.tensor(np.array(labels))
             d["inputs"]["cluster"] = torch.tensor(np.array(cluster))
-
         else:
             inputs = self.tokenizer(d["input_context"], padding=True, max_length=self.args.max_seq_length,
                                     truncation=True)
@@ -140,41 +127,38 @@ def process_raw_data(args, tokenizer, run_type):
 
     schema = json.load(open(os.path.join(data_dir, "schema.json"), "r"))
 
-    all_slotnames = ["name"]
-
+    all_slotnames = []
     for k, v in schema.items():
         all_slotnames.extend(v)
-
-    description = None
-    # description = json.load(open(os.path.join(data_dir, "description.json"), "r"))
 
     raw_data = pd.read_json(os.path.join(data_dir, f"{run_type}.json"), encoding="utf-8")
     raw_data = process_valid_dialogue(args, raw_data, zero_shot_domain, run_type)
 
-    slotnames = []
-
-
     print(f"{run_type} raw data: {len(raw_data)}")
-    cluster_info = None
-    processed_data = get_processed_data(args, raw_data, schema, cluster_info, run_type)
+
+    processed_data = get_processed_data(args, raw_data, schema, run_type)
 
     processed_data = pd.DataFrame(processed_data)
-
     slotnames = list(set(processed_data["slotname"]))
-    cluster_info = cluster(args, tokenizer, slotnames, all_slotnames, run_type)
 
-    def add_cluster_id(df):
-        df["cluster"] = cluster_info[df["slotname"]]
-        return df
-    processed_data = processed_data.apply(add_cluster_id, axis=1)
+    cluster_ids = cluster(args, tokenizer, slotnames, all_slotnames, run_type)
 
-    return processed_data, description
+    # def add_cluster_id(df):
+    #     df["cluster_id"] = cluster_ids[df["slotname"]]
+    #     return df
+
+    # processed_data = processed_data.apply(add_cluster_id, axis=1)
+
+    processed_data["cluster_id"] = processed_data["slotname"].map(cluster_ids)
+
+    return processed_data
+
 
 
 def data_loader(args, tokenizer, run_type="train"):
-    processed_data, description = process_raw_data(args, tokenizer, run_type)
+    processed_data = process_raw_data(args, tokenizer, run_type)
 
-    if run_type != "test":
+    if run_type == "train":
         processed_data = sample_data(args, processed_data, run_type)
 
     if args.num_sample > 0:
@@ -182,20 +166,17 @@ def data_loader(args, tokenizer, run_type="train"):
         example = {k: v for k, v in example}
 
     if run_type != "test":
-        processed_data = processed_data.groupby("cluster")
+        processed_data = processed_data.groupby("cluster_id")
         loader = {}
-
         for k, v in processed_data:
             v = v.reset_index(drop=True)
             data = DSTState(
                 args,
                 v,
-                description,
                 example if args.num_sample > 0 else None,
                 tokenizer,
                 run_type
             )
-
             loader[k] = DataLoader(
                 data,
                 batch_size=args.train_batch_size if run_type == "train" else args.evaluate_batch_size,
@@ -203,14 +184,10 @@ def data_loader(args, tokenizer, run_type="train"):
                 num_workers=6 * (args.num_gpu if "num_gpu" in args else 1),
                 shuffle=True if run_type == "train" else False
             )
-            print(f"k: {k}")
-        print(f"success fully load {run_type} data")
     else:
-
         data = DSTState(
             args,
             processed_data,
-            description,
             example if args.num_sample > 0 else None,
             tokenizer,
             run_type
@@ -224,6 +201,7 @@ def data_loader(args, tokenizer, run_type="train"):
             shuffle=True if run_type == "train" else False
         )
 
+    print(f"success fully load {run_type} data")
     return loader
 
 
@@ -263,7 +241,7 @@ def process_valid_dialogue(args, raw_data, zero_shot_domain, run_type):
     return raw_data
 
 
-def get_processed_data(args, data, schema, cluster_info, run_type):
+def get_processed_data(args, data, schema, run_type):
 
     processed_data = []
     for idx, d in data.iterrows():
@@ -278,19 +256,13 @@ def get_processed_data(args, data, schema, cluster_info, run_type):
 
         for bf in d["belief_state"]:
             turn = bf["turn"]
-            if run_type == "test" or args.use_all_state:
-                belief_states = {s[1]: s[2] for s in bf["all_states"]}
-                utterance = " ".join(dialogue_history[:turn])
-            else:
-                belief_states = {s[1]: s[2] for s in bf["turn_states"]}
-                utterance = dialogue_history[turn - 1]
+            belief_states = {s[1]: s[2] for s in bf["all_states"]}
+            utterance = " ".join(dialogue_history[:turn])
             for domain, slot in possible_slots:
                 if slot in belief_states:
                     value = belief_states[slot]
                 else:
                     value = "none"
-                # p = cluster_info[slot]
-
                 processed_data.append({
                     "dialogue_id": dialogue_id,
                     "slotname": slot,
@@ -298,7 +270,6 @@ def get_processed_data(args, data, schema, cluster_info, run_type):
                     "turn": turn,
                     "utterance": utterance,
                     "domain": domain,
-                    # "cluster": p
                 })
 
     print(f"all processed data {len(processed_data)}")
@@ -306,11 +277,11 @@ def get_processed_data(args, data, schema, cluster_info, run_type):
 
 
 def sample_data(args, data, run_type):
-    def sample(df):
+    def sample(df: pd.DataFrame):
         none_data = df[df["value"] == "none"]
         valid_data = df[df["value"] != "none"]
         print(f"none data: {len(none_data)} valid data: {len(valid_data)}")
-        valid_none_data = none_data.sample(min(len(none_data), int(len(valid_data) * args.none_rate)))
+        valid_none_data = none_data.sample(min(len(none_data), int(len(valid_data) * args.none_rate)), random_state=args.random_seed)
         df = pd.concat([valid_data, valid_none_data]).reset_index(drop=True)
         df = df.sort_values(by="dialogue_id").reset_index(drop=True)
         print(f"none: {len(valid_none_data)} labeled: {len(valid_data)}")

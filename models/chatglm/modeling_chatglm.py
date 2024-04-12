@@ -154,6 +154,7 @@ class PrefixEncoder(torch.nn.Module):
         else:
             self.embedding = torch.nn.Embedding(config.pre_seq_len, config.num_layers * config.hidden_size * 2)
 
+
     def forward(self, prefix: torch.Tensor):
         if self.prefix_projection:
             prefix_tokens = self.embedding(prefix)
@@ -852,6 +853,7 @@ class ChatGLMModel(ChatGLMPreTrainedModel):
                 param.requires_grad = False
             self.prefix_tokens = torch.arange(self.pre_seq_len).long()
             # self.prefix_encoder = PrefixEncoder(config)
+
             self.prefix_encoder = nn.ModuleDict({
                 f"cluster_{i}": PrefixEncoder(config) for i in range(config.n_clusters)
             })
@@ -874,6 +876,7 @@ class ChatGLMModel(ChatGLMPreTrainedModel):
         for i in range(batch_size):
             past_key_values.append(self.prefix_encoder[f"cluster_{cluster[i]}"](prefix_tokens[i]).type(dtype))
         past_key_values = torch.stack(past_key_values, dim=0)
+
         past_key_values = past_key_values.view(
             batch_size,
             self.pre_seq_len,

@@ -140,5 +140,7 @@ parser.add_argument("--save_step", default=2000, type=int)
 parser.add_argument("--exclude_domain", default="all", type=str)
 parser.add_argument("--cluster_feature", default="transformer", type=str)
 parser.add_argument("--none_rate", default=1, type=float)
+parser.add_argument("--stop_metrics", default="slot_acc", type=str)
+parser.add_argument("--stop_time", default=3, type=int)
 
 args = parser.parse_args()

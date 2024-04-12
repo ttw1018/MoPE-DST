@@ -58,7 +58,7 @@ def cluster(args, tokenizer, slotnames, all_slotnames, run_type="train"):
     save_path = os.path.join(save_dir, f"kmeans-{n_clusters}.pkl")
 
     if run_type == "train":
-        kmeans = KMeans(n_clusters=n_clusters, n_init="auto")
+        kmeans = KMeans(n_clusters=n_clusters, n_init="auto", random_state=args.random_seed)
         kmeans.fit(x)
         y = kmeans.labels_
         joblib.dump(kmeans, save_path)

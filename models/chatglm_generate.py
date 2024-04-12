@@ -1,4 +1,4 @@
-from models.chatglm.modeling_chatglm import ChatGLMForConditionalGeneration
+from models.chatglm.modeling_chatglm import ChatGLMForConditionalGeneration, PrefixEncoder
 from models.chatglm.configuration_chatglm import ChatGLMConfig
 from torch import nn
 from utils.logger import run_logger
@@ -49,7 +49,7 @@ class DST(nn.Module):
         config.n_clusters = args.n_clusters
         if args.mppt:
             config.pre_seq_len = args.pre_seq_len
-            config.prefix_projection = False
+
         self.model = ChatGLMForConditionalGeneration.from_pretrained(args.chatglm_path, config=config)
 
         self.uuid = uuid.uuid1().__str__()
@@ -60,9 +60,6 @@ class DST(nn.Module):
                 torch.load(os.path.join(args.checkpoint, "prefix.pt")))
             with open(os.path.join(args.checkpoint, "uuid.txt"), "r") as fin:
                 self.uuid = fin.read()
-
-        if self.args.chatglm_quantize is not None:
-            self.model = self.model.quantize(args.chatglm_quantize)
 
         self.model = self.model.half()
 
