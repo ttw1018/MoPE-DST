@@ -21,6 +21,8 @@ conditional generation. Multiple Prefix Prompt Generation shows the complete pip
 
 ### Download packages
 
+`python >= 3.10`
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -38,4 +40,25 @@ bash download_process_data.sh
 
 ```bash
 bash run.sh
+```
+
+**note:** 
+
+`--chatglm_path` should be changed to your personal pretrained model save path.
+
+`--result_csv_dir` is the directory of the saved results. We provide two display forms for the results, you can refer to the csv file to check the main results. Further more, we provide a sqlite3 db to record all results during the whole train and evaluation, such as the performance on the validation data and so on. 
+
+`--checkpoint` all tuned parameters are stored in `save/${dataset}/${exclude_domain}/${train_id}/${feature}/best`, so you can get the whole information of the checkpoint in the directory mentioned above.
+
+
+# Other notes
+
+we find that there exists some variances during the train. Therefore, there may be some fluctuations in the experimental results.
+
+# Citation
+
+If you think that our work is helpful to you, don't forget to cite us.
+
+```
+
 ```

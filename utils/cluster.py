@@ -87,9 +87,8 @@ def cluster(args, tokenizer, slotnames, all_slotnames, run_type="train"):
         for j in range(len(slotnames)):
             if pos[i][1] == pos[j][1]:
                 cluster_similarity.append([i, j, cosine_similarity_matrix[i][j]])
-                if i != j:
-                    sum2 += cosine_similarity_matrix[i][j]
-                    cnt2 += 1
+                sum2 += cosine_similarity_matrix[i][j]
+                cnt2 += 1
             else:
                 cluster_similarity.append([i, j, 0])
             source_heatmap.append([i, j, cosine_similarity_matrix[i][j]])
