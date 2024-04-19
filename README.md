@@ -60,5 +60,10 @@ we find that there exists some variances during the train. Therefore, there may 
 If you think that our work is helpful to you, don't forget to cite us.
 
 ```
-
+@article{tang2024mope,
+  title={MoPE: Mixture of Prefix Experts for Zero-Shot Dialogue State Tracking},
+  author={Tang, Tianwen and Zhu, Tong and Liu, Haodong and Bai, Yin and Cheng, Jia and Chen, Wenliang},
+  journal={arXiv preprint arXiv:2404.08559},
+  year={2024}
+}
 ```
