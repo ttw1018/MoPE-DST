@@ -2,12 +2,7 @@
 
 ## Abstract
 
-Zero-shot dialogue state tracking (DST) transfers knowledge to unseen domains, reducing the cost of annotating
-new datasets. Previous zero-shot DST models mainly suffer from domain transferring and partial prediction prob-
-lems. To address these challenges, we propose Mixture of Prefix Prompt Experts (MPPE) to establish connections
-between similar slots in different domains, which strengthens the model transfer performance in unseen domains.
-Empirical results demonstrate that MPPE-DST achieves the joint goal accuracy of 57.13% on MultiWOZ2.1 and
-55.40% on SGD.
+Zero-shot dialogue state tracking (DST) transfers knowledge to unseen domains, reducing the cost of annotating new datasets. Previous zero-shot DST models mainly suffer from domain transferring and partial prediction problems. To address these challenges, we propose Mixture of Prefix Experts (MoPE) to establish connections between similar slots in different domains, which strengthens the model transfer performance in unseen domains. Empirical results demonstrate that MoPE-DST achieves the joint goal accuracy of 57.13% on MultiWOZ2.1 and 55.40% on SGD.
 
 ## Model Architecture
 
