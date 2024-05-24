@@ -55,10 +55,27 @@ we find that there exists some variances during the train. Therefore, there may 
 If you think that our work is helpful to you, don't forget to cite us.
 
 ```
-@article{tang2024mope,
-  title={MoPE: Mixture of Prefix Experts for Zero-Shot Dialogue State Tracking},
-  author={Tang, Tianwen and Zhu, Tong and Liu, Haodong and Bai, Yin and Cheng, Jia and Chen, Wenliang},
-  journal={arXiv preprint arXiv:2404.08559},
-  year={2024}
+@inproceedings{tang-etal-2024-mope-mixture,
+    title = "{M}o{PE}: Mixture of Prefix Experts for Zero-Shot Dialogue State Tracking",
+    author = "Tang, Tianwen  and
+      Zhu, Tong  and
+      Liu, Haodong  and
+      Bai, Yin  and
+      Cheng, Jia  and
+      Chen, Wenliang",
+    editor = "Calzolari, Nicoletta  and
+      Kan, Min-Yen  and
+      Hoste, Veronique  and
+      Lenci, Alessandro  and
+      Sakti, Sakriani  and
+      Xue, Nianwen",
+    booktitle = "Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING 2024)",
+    month = may,
+    year = "2024",
+    address = "Torino, Italia",
+    publisher = "ELRA and ICCL",
+    url = "https://aclanthology.org/2024.lrec-main.1012",
+    pages = "11582--11592",
+    abstract = "Zero-shot dialogue state tracking (DST) transfers knowledge to unseen domains, reducing the cost of annotating new datasets. Previous zero-shot DST models mainly suffer from domain transferring and partial prediction problems. To address these challenges, we propose Mixture of Prefix Experts (MoPE) to establish connections between similar slots in different domains, which strengthens the model transfer performance in unseen domains. Empirical results demonstrate that MoPE-DST achieves the joint goal accuracy of 57.13{\%} on MultiWOZ2.1 and 55.4.",
 }
 ```
